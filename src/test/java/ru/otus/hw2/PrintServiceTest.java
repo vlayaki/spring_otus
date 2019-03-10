@@ -4,12 +4,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import ru.otus.homework2.service.LocaleService;
-import ru.otus.homework2.service.PrintService;
-import ru.otus.homework2.service.PrintServiceImpl;
+import ru.otus.homework2.pojo.UserInfo;
+import ru.otus.homework2.service.*;
 import ru.otus.hw2.config.TestConfig;
 
 import java.util.HashMap;
@@ -24,20 +24,21 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class PrintServiceTest {
 
     @Autowired
-    MessageSource messageSource;
+    ApplicationContext applicationContext;
 
     @Test
     public void shouldReturnQuizResultsInRussianForUsersWithRussianLocale() {
         LocaleService localeService = Mockito.mock(LocaleService.class);
         Mockito.when(localeService.getUserLocale()).thenReturn(new Locale("ru"));
-        PrintService printService = new PrintServiceImpl(messageSource, localeService);
+        MessageService messageService = new MessageServiceImpl(applicationContext.getBean(MessageSource.class), localeService);
+        PrintService printService = new PrintServiceImpl(messageService);
         Map<String, String> questionsToAnswers = new HashMap<>();
         questionsToAnswers.put("Сколько Вам лет?", "11");
         questionsToAnswers.put("Есть ли у Вас домашние животные?", "да");
-        String quizResults = printService.getPrintResultsAsString("Иванов", "Иван", questionsToAnswers);
+        String quizResults = printService.getPrintResultsAsString(new UserInfo("Иван", "Иванов"), questionsToAnswers);
         String expected = "=============================================================" +
                 System.lineSeparator() +
-                "Результаты опроса для Иванов Иван:" +
+                "Результаты опроса для Иван Иванов:" +
                 System.lineSeparator() +
                 System.lineSeparator() +
                 "вопрос: Сколько Вам лет?" +
@@ -57,11 +58,13 @@ public class PrintServiceTest {
     public void shouldReturnQuizResultsInEnglishForUsersWithEnglishLocale() {
         LocaleService localeService = Mockito.mock(LocaleService.class);
         Mockito.when(localeService.getUserLocale()).thenReturn(Locale.ENGLISH);
-        PrintService printService = new PrintServiceImpl(messageSource, localeService);
+        MessageSource messageSource = applicationContext.getBean(MessageSource.class);
+        MessageService messageService = new MessageServiceImpl(messageSource, localeService);
+        PrintService printService = new PrintServiceImpl(messageService);
         Map<String, String> questionsToAnswers = new HashMap<>();
         questionsToAnswers.put("How old are you?", "11");
         questionsToAnswers.put("Do you have any pets?", "no");
-        String quizResults = printService.getPrintResultsAsString("Ivan", "Ivanov", questionsToAnswers);
+        String quizResults = printService.getPrintResultsAsString(new UserInfo("Ivan", "Ivanov"), questionsToAnswers);
         String expected = "=============================================================" +
                 System.lineSeparator() +
                 "Quiz results for Ivan Ivanov:" +

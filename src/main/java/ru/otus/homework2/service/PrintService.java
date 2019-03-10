@@ -1,7 +1,9 @@
 package ru.otus.homework2.service;
 
+import ru.otus.homework2.pojo.UserInfo;
+
 import java.util.Map;
 
 public interface PrintService {
-    String getPrintResultsAsString(String firstName, String lastName, Map<String, String> questionsToAnswers);
+    String getPrintResultsAsString(UserInfo userInfo, Map<String, String> questionsToAnswers);
 }

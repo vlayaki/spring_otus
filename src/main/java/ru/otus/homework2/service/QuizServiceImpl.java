@@ -2,9 +2,9 @@ package ru.otus.homework2.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import ru.otus.homework2.dao.QuizDao;
+import ru.otus.homework2.pojo.UserInfo;
 
 import java.util.*;
 
@@ -16,25 +16,33 @@ public class QuizServiceImpl implements QuizService {
 
     private final QuizDao quizDao;
     private final PrintService printService;
-    private final MessageSource messageSource;
+    private final MessageService messageService;
     private final LocaleService localeService;
 
     @Override
     public void startQuiz() {
         Locale userLocale = localeService.getUserLocale();
-        log.info(messageSource.getMessage("msg.name.first", null, userLocale));
+        UserInfo userInfo = collectUserInfo();
+        Map<String, String> questionsToAnswers = conductQuiz(userLocale);
+        log.info(printService.getPrintResultsAsString(userInfo, questionsToAnswers));
+    }
+
+    private UserInfo collectUserInfo(){
+        log.info(messageService.getMessage("msg.name.first"));
         String firstName = scanner.nextLine();
-        log.info(messageSource.getMessage("msg.name.last", null, userLocale));
+        log.info(messageService.getMessage("msg.name.last"));
         String lastName = scanner.nextLine();
-        log.info(messageSource.getMessage("msg.answer.questions", null, userLocale));
-        List<String> questions = quizDao.getQuestions();
+        return new UserInfo(firstName, lastName);
+    }
+
+    private Map<String, String> conductQuiz(Locale userLocale){
+        log.info(messageService.getMessage("msg.answer.questions"));
+        List<String> questions = quizDao.getQuestions(userLocale);
         Map<String, String> questionsToAnswers = new LinkedHashMap<>();
         for (String question : questions) {
             log.info(question);
             questionsToAnswers.put(question, scanner.nextLine());
         }
-        log.info(printService.getPrintResultsAsString(firstName, lastName, questionsToAnswers));
+        return questionsToAnswers;
     }
-
-
 }

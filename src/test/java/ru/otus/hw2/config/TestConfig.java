@@ -10,7 +10,7 @@ public class TestConfig {
     @Bean
     public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasenames("i18/questions", "i18/messages");
+        messageSource.setBasenames("i18/messages");
         return messageSource;
     }
 
